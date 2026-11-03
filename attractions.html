@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>成都景点介绍</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root { --bg:#fafafa; --fg:#1a1a1a; --muted:#666; --accent:#38a169; --card:#fff; --border:#e0e0e0; }
+    * { box-sizing:border-box; }
+    body { font-family:'Noto Sans SC',sans-serif; background:var(--bg); color:var(--fg); overflow-x:hidden; }
+    ::-webkit-scrollbar { width:8px; height:8px; }
+    ::-webkit-scrollbar-track { background:transparent; }
+    ::-webkit-scrollbar-thumb { background:#ccc; border-radius:4px; }
+    ::-webkit-scrollbar-thumb:hover { background:#bbb; }
+    .page { min-height:100vh; display:none; opacity:0; transform:translateY(20px); transition:opacity .4s ease,transform .4s ease; }
+    .page.active { display:block; opacity:1; transform:translateY(0); }
+    .fade-in { animation:fadeIn .6s ease forwards; }
+    .delay-200 { animation-delay:.2s; }
+    .delay-400 { animation-delay:.4s; }
+    .delay-600 { animation-delay:.6s; }
+    @keyframes fadeIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+    .nav-tab { text-sm font-medium text-[var(--muted)] hover:text-[var(--accent)] transition-colors relative; }
+    .nav-tab::after { content:''; absolute bottom-1 left-1/2 w-0 h-0.5 bg-[var(--accent)] transition-all duration-300; }
+    .nav-tab.active::after { w-full; }
+    .card { bg-[var(--card)] rounded-xl p-4 shadow-sm border border-[var(--border)]; }
+    .btn-nav { text-sm font-medium text-[var(--accent)] hover:bg-[var(--accent)] hover:text-white px-4 py-2 rounded transition-colors; }
+    .btn-page { px-6 py-3 bg-white rounded-lg hover:bg-gray-100 transition-colors font-medium border border-[var(--border)]; }
+    .btn-page:disabled { opacity-50 cursor-not-allowed; }
+  </style>
+</head>
+<body>
+  <nav class="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-[var(--border)]">
+    <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+      <div class="text-xl font-bold text-[var(--fg)]">成都·天府之国</div>
+      <div class="flex gap-2 nav-tab-group" id="navTabs"></div>
+    </div>
+  </nav>
+  <main class="pt-20 pb-80">
+    <div id="pages" class="relative"></div>
+  </main>
+  <div class="fixed left-1/2 -translate-x-1/2 bottom-6 flex gap-4">
+    <button id="prevPage" class="btn-page prev-next" aria-label="上一页">上一页</button>
+    <button id="nextPage" class="btn-page prev-next" aria-label="下一页">下一页</button>
+  </div>
+  <div id="bottomTabs" class="fixed left-1/2 -translate-x-1/2 bottom-4 flex gap-1"></div>
+  <script>
+    const pagesData = [
+      {id:1,title:'封面页',bgImage:''},
+      {id:2,title:'成都大熊猫繁育研究基地｜概况页',bgImage:''},
+      {id:3,title:'成都大熊猫繁育研究基地｜深度讲解页',bgImage:''},
+      {id:4,title:'锦里古街｜概况页',bgImage:''},
+      {id:5,title:'锦里古街｜游客游玩感受页',bgImage:''},
+      {id:6,title:'武侯祠｜概况页',bgImage:''},
+      {id:7,title:'武侯祠｜历史讲解页',bgImage:''},
+      {id:8,title:'杜甫草堂｜概况页',bgImage:''},
+      {id:9,title:'杜甫草堂｜诗文与历史详解页',bgImage:''},
+      {id:10,title:'金沙遗址｜独特性与古蜀历史页',bgImage:''}
+   ];
+
+    function renderPages() {
+      const container = document.getElementById('pages');
+      let pagesHTML = '';
+      let navHTML = '';
+      let bottomHTML = '';
+
+      pagesData.forEach((page, idx) => {
+        const p = idx + 1;
+        // 封面页（第1板块）：全屏背景，其他板块有卡片内容
+        const isCover = (p === 1);
+        pagesHTML += `<section class="page${idx === 0 ? ' active' : ''}" id="page${p}" style="background-image: url('${page.bgImage}'); background-size: cover; background-position: center; position:relative;">
+          ${isCover ? `<div class="absolute inset-0 flex items-center justify-center">
+            <div class="text-center text-white transform-z-10">
+              <h1 class="text-5xl font-bold mb-4 fade-in">成都·天府之国</h1>
+              <p class="text-lg opacity-90 fade-in delay-200">成都景点微旅游介绍</p>
+            </div>
+          </div>` : ''}
+        </section>`;
+        // 板块2-10：使用卡片式内容布局，每个板块有特定内容
+        const hasCard = (p >= 2 && p <= 10);
+        const cardContent = hasCard ? `<!-- 板块2 -->
+          ${(p === 2) ? `<div class="card">
+            <h2 class="text-xl font-semibold mb-3">成都大熊猫繁育研究基地</h2>
+            <p class="text-[var(--muted)] text-sm leading-relaxed mb-4">
+              位置：成都武侯区大熊猫园
+              <br>门票：免费（需预约）
+              <br>开放时间：07:30 - 18:00（夏季延长至18:30）
+              <br>最佳游玩季节：3月-11月， particularly 5-11月可观察到幼熊
+            </p>
+            <div class="grid grid-cols-2 gap-2 text-sm">
+              <div><span class="font-medium">打卡看点：</span>大熊猫幼崽观察区、科普教育馆、模拟自然栖息地</div>
+              <div><span class="font-medium">建议时长：</span>2-3小时</div>
+            </div>
+          </div>` : ''}
+          <!-- 板块3 -->
+          ${(p === 3) ? `<div class="grid grid-cols-2 gap-6">
+            <div>
+              <h3 class="font-medium mb-3">基地建立历史</h3>
+              <p class="text-[var(--muted)] text-sm leading-relaxed">
+                成都大熊猫繁育研究基地始建于1987年，由原成都大熊猫繁育研究所更名而来。基地依托于成都独特的气候条件和丰富的竹林资源，致力于大熊猫的保护繁殖科研工作。经过近四 decade 的努力，基地 successfully 实现了大熊猫人工繁殖的突破，每年都有新的熊猫宝宝诞生。
+              </p>
+              <p class="text-[var(--muted)] text-sm mt-4">
+                目前基地已成为国内外大熊猫保护研究的重要基地，每年接待大量国内外游客和研究人员，成为成都最具代表性的生态旅游目的地之一。
+              </p>
+            </div>
+            <div>
+              <h3 class="font-medium mb-3">大熊猫繁育保护工作</h3>
+              <p class="text-[var(--muted)] text-sm leading-relaxed">
+                基地开展了系统的大熊猫种群管理和遗传学研究，建立了完整的大熊猫种群档案。通过人工授精和自然繁殖相结合的方式，成功培育出大量存活的熊猫幼崽。基地还积极开展野外种群监测和栖息地恢复项目，致力于将人工繁殖的成果回归野外。
+              </p>
+              <ul class="list-disc pl-5 text-sm mt-3">
+                <li>建立国家级大熊猫自然保护区协调机制</li>
+                <li>开展遗传多样性监测与评估</li>
+                <li>开发环境教育课程，提升公众保护意识</li>
+              </ul>
+            </div>
+          </div>
+          <div class="mt-6 card">
+            <h3 class="font-medium mb-3">熊猫习性</h3>
+            <p class="text-[var(--muted)] text-sm leading-relaxed">
+              大熊猫是中国的国家宝物，主要食用竹子，日活动时间约为8-12小时。它们性格温顺但亦有凶猛一面，主要在繁殖季节。大熊猫的体型呈现出性二形性，公熊通常比母熊大。它们的嗅觉极为敏锐，用于识别同类和寻找食物。冬季大熊猫并不真正冬眠，而是降低活动量寻找食物。
+            </p>
+            <p class="text-[var(--muted)] text-sm mt-3">
+              游玩路线推荐：从大熊猫科普教育馆出发，沿木栈道前往幼崽观察区，最后经由竹林步道返回，全程约800米，设有多个可近距离观察熊猫活动的观察平台。
+            </p>
+          </div>` : ''}
+          <!-- 板块4 -->
+          ${(p === 4) ? `<div class="relative h-64 md:h-80 flex items-center justify-center md:pt-12">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/65/Jinli_Street_Chengdu_Night.jpg/1280px-Jinli_Street_Chengdu_Night.jpg" referrerpolicy="no-referrer" alt="锦里古街夜景实拍图，灯笼挂满两旁的青石板路" class="w-full max-w-md md:max-w-lg object-cover rounded-lg shadow-lg">
+          </div>
+          <div class="card">
+            <h2 class="text-xl font-semibold mb-3">锦里古街</h2>
+            <p class="text-[var(--muted)] text-sm leading-relaxed mb-4">
+              位置：成都武侯区锦里街
+              <br>门票：免费开放，个别展馆/表演收费
+              <br>开放时间：10:00 - 22:00（夜间营业至23:00）
+              <br>特色小吃：串串香、抄手、米粉、糖葫芦、川味小吃
+            </p>
+            <div class="grid grid-cols-2 gap-2 text-sm">
+              <div><span class="font-medium">标志性景观：</span>灯笼街、陈旧青砖墙、传统木栏杆、川剧变脸表演舞台</div>
+              <div><span class="font-medium">推荐路线：</span>从南门入，经竹林巷至北门，全程约500米</div>
+            </div>
+          </div>` : ''}
+          <!-- 板块5 -->
+          ${(p === 5) ? `<p class="text-[var(--muted)] text-sm leading-relaxed mb-4">
+            我锦里古街的游玩始于一个周末的黄昏。青石板路在昏黄的灯光下泛着光泽，两旁的青砖墙上挂满红色灯笼，每当风吹过，灯笼微微摆动，投下摇曳的影子。夜晚的锦里人气旺盛，街头巷尾的串串香店里传出欢声笑语，游客络绎不绝。
+          </p>
+          <p class="text-[var(--muted)] text-sm leading-relaxed mb-4">
+            夜景氛围特别好，尤其是秋冬季节，微凉的空气里弥漫着美食的香气。我建议大家晚上7点后前往，此时人相对稍少，且能欣赏到最绚丽的灯光秀。夜晚的锦里还会有川剧变脸、情侣锣鼓等非遗表演，非常精彩。
+          </p>
+          <ul class="list-disc pl-5 text-sm mt-4 space-y-2">
+            <li><span class="font-medium">避坑小贴士：</span>周末晚上人潮拥挤，建议提前打车前往，避免在狭窄的青石板路上排队久久</li>
+            <li><span class="font-medium">避坑小贴士：</span>街头小吃要注意食品卫生，可选择人流较多、看起来新鲜的摊位</li>
+            <li><span class="font-medium">避坑小贴士：</span>拍照时注意个人财物，人多拥挚区域要防止手机掉落</li>
+          </ul>` : ''}
+          <!-- 板块6 -->
+          ${(p === 6) ? `<div class="relative h-64 md:h-80 flex items-center justify-center md:pt-12">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/63/Wuhouci_Chengdu.jpg/1280px-Wuhouci_Chengdu.jpg" referrerpolicy="no-referrer" alt="武侯祠实拍图，青石板路和古色古香的建筑群" class="w-full max-w-md md:max-w-lg object-cover rounded-lg shadow-lg">
+          </div>
+          <div class="card">
+            <h2 class="text-xl font-semibold mb-3">武侯祠</h2>
+            <p class="text-[var(--muted)] text-sm leading-relaxed mb-4">
+              位置：成都武侯祠历史文化街区
+              <br>门票：60元（含武侯祠+杜甫草堂联票）
+              <br>开放时间：08:00 - 18:30
+              <br>核心打卡点：关羽像、诸葛亮像、三苏祠
+            </p>
+            <div class="grid grid-cols-2 gap-2 text-sm">
+              <div><span class="font-medium">建筑特色：</span>半山腰建筑、落英池、对称布局的殿堂</div>
+              <div><span class="font-medium">祭祀形式：</span>君臣合祀（关羽、刘关羽、诸葛亮合祀}</div>
+            </div>
+          </div>` : ''}
+          <!-- 板块7 -->
+          ${(p === 7) ? `<div class="grid grid-cols-2 gap-6">
+            <div>
+              <h3 class="font-medium mb-3">三国历史讲解</h3>
+              <p class="text-[var(--muted)] text-sm leading-relaxed">
+                武侯祠位于成都市武侯区，是中国现存最大的三国时期人物祠堂。它始建于唐朝，明清时期多次扩建。祠堂内主要祭祀三国时期的关羽、张飞、马超、黄忠等义士，以及诸葛亮等文官。这里是三国文化的重要载体，见证了刘关张“桃囊结义”和诸葛亮“七擒孟获”等历史故事。
+              </p>
+              <p class="text-[var(--muted)] text-sm mt-4">
+                祠堂占地面积约15000平方米，建筑布局沿中轴线对称分布，包括前殿、中殿、后殿等。每逢传统节日和清明节，都会有香客前来祭拜，祈求风调雨顺、国泰民安。
+              </p>
+            </div>
+            <div>
+              <h3 class="font-medium mb-3">君臣合祀的特点</h3>
+              <p class="text-[var(--muted)] text-sm leading-relaxed">
+                武侯祠最独特的特色是“君臣合祀”——即武穆王关羽（君主方面）与诸葛亮（臣臣方面）合祀于一祠。这种祭祀形式在中国祠堂中非常罕见，体现了“忠诚与智慧并重”的文化内涵。关羽作为封神的武圣，象征忠勇；诸葛亮作为文化的代表，象征忠智两种美德的完美结合。
+              </p>
+              <ul class="list-disc pl-5 text-sm mt-3">
+                <li>合祀意义：忠义两全，君臣情谊</li>
+                <li>文化价值：三国精神的现代传承</li>
+                <li>艺术价值：祠堂建筑与雕刻艺术的结合</li>
+              </ul>
+            </div>
+          </div>
+          <div class="mt-6 card">
+            <h3 class="font-medium mb-3">祠内重点文物故事</h3>
+            <p class="text-[var(--muted)] text-sm leading-relaxed">
+              武侯祠内藏有大量珍贵文物，其中最著名的是北魂关羽像，身高超过2米，栩栩如生。另外，还保存有陈设着三国时期武器、陶俑、书法碑刻的展厅。最感人的故事要数“阿斗敬关羽”以及关羽“过五关斩六将”的典故，这些故事不仅流传于民间，也成为了祠堂内的重要文化符号。
+            </p>
+          </div>` : ''}
+          <!-- 板块8 -->
+          ${(p === 8) ? `<div class="relative h-64 md:h-80 flex items-center justify-center md:pt-12">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5d/Caotang_Park_Chengdu.jpg/1280px-Caotang_Park_Chengdu.jpg" referrerpolicy="no-referrer" alt="杜甫草堂实拍图，青苔覆盖的茅屋和竹林" class="w-full max-w-md md:max-w-lg object-cover rounded-lg shadow-lg">
+          </div>
+          <div class="card">
+            <h2 class="text-xl font-semibold mb-3">杜甫草堂</h2>
+            <p class="text-[var(--muted)] text-sm leading-relaxed mb-4">
+              位置：成都青羊区草堂路
+              <br>门票：80元（含联票）
+              <br>开放时间：08:00 - 18:00
+              <br>环境特色：依山而建、竹林环绕、诗意园林、茅舍残垣
+            </p>
+            <div class="grid grid-cols-2 gap-2 text-sm">
+              <div><span class="font-medium">面积：</span>约24亩</div>
+              <div><span class="font-major">重点：</span>诗僧居住地、草堂博物馆</div>
+            </div>
+          </div>` : ''}
+          <!-- 板块9 -->
+          ${(p === 9) ? `<div class="grid grid-cols-2 gap-6">
+            <div>
+              <h3 class="font-medium mb-3">杜甫旅居成都经历</h3>
+              <p class="text-[var(--muted)] text-sm leading-relaxed">
+                杜甫自从唐朝天宝六年（747年）随家人南下至成都后，在这里度过了约近四年的时光。在这段期间，他创作了大量不朽的诗作，诗中记录了战乱中的百姓疾苦，也表达了他对国家命运的深切关怀。杜甫在草堂的居住环境简朴，正是他淡泊名利、专心诗创的重要时期。
+              </p>
+              <p class="text-[var(--muted)] text-sm mt-4">
+                在成都的居住地就在今天的草堂 site 附近，依山而建的茅屋让他得以安心沉淀。虽然生活拮据，但他笔下的诗句却越写越富有力量，被后人称为“史诗”之称的《咏史》便多出自这段成都时光。
+              </p>
+            </div>
+            <div>
+              <h3 class="font-medium mb-3">代表诗作</h3>
+              <ul class="list-disc pl-5 text-sm mt-4 space-y-2">
+                <li><span class="font-medium">《茅屋夜雨》：</span>写草堂夜晚雨声入屋，表达天下兴亡匹夫有责的家国情怀</li>
+                <li><span class="font-medium">《阴雨中示子由》：</span>描写连绵雨天中游子思归之情</li>
+                <li><span class="font-medium">《自京赴蜀途中》：</span>记录从京城经陕西至成都的途中所见所感</li>
+              </ul>
+              <p class="text-[var(--muted)] text-sm mt-4">
+                另外，《春望》一诗中“国破山河在，城春草木深”的名句，更是千古流传的家国哀叹。
+              </p>
+            </div>
+          </div>
+          <div class="mt-6 card">
+            <h3 class="font-medium mb-3">草堂的历史变迁</h3>
+            <p class="text-[var(--muted)] text-sm leading-relaxed">
+              杜甫草堂经历了多次毁坍与重建。最初的草堂为茅屋， later 被毁于战争。清朝乾隆年间，官府和地方士绅开始募资重建，至民国时期草堂已成为重要的文化遗址。1980年代，成都政府进行了大规模的修缮与提升工程，将草堂打造为集诗文化、园林景观、历史展示于一体的综合性文化园区。如今的草堂，既保留了古韵，又融入了现代的展览设施，成为研究杜甫诗文和唐代社会的重要窗口。
+            </p>
+          </div>` : ''}
+          <!-- 板块10 -->
+          ${(p === 10) ? `...` : ''}` : '';
+        pagesHTML += `<section class="page${idx === 0 ? ' active' : ''}" id="page${p}" style="background-image: url('${page.bgImage}'); background-size: cover; background-position: center; position:relative;">${cardContent}</section>`;
+        navHTML += `<button class="nav-tab${idx === 0 ? ' active' : ''}" data-page="${p}">${page.title}</button>`;
+        bottomHTML += `<button class="nav-tab${idx === 0 ? ' active' : ''}" data-page="${p}">${p}</button>`;
+      });
+
+      container.innerHTML = pagesHTML;
+      const navContainer = document.getElementById('navTabs');
+      if (navContainer) navContainer.innerHTML = navHTML;
+      const bottomContainer = document.getElementById('bottomTabs');
+      if (bottomContainer) bottomContainer.innerHTML = bottomHTML;
+
+      // Add listeners after rendering
+      document.querySelectorAll('.nav-tab').forEach(tab => {
+        tab.addEventListener('click', (e) => showPage(parseInt(e.target.dataset.page)));
+      });
+    }
+
+    function showPage(pageNum) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.getElementById(`page${pageNum}`).classList.add('active');
+
+      document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+      document.querySelector(`.nav-tab[data-page="${pageNum}"]`).classList.add('active');
+
+      document.querySelectorAll('#bottomTabs .nav-tab').forEach(t => t.classList.remove('active'));
+      document.querySelector(`#bottomTabs .nav-tab[data-page="${pageNum}"]`).classList.add('active');
+
+      document.getElementById('prevPage').disabled = pageNum === 1;
+      document.getElementById('nextPage').disabled = pageNum === pagesData.length;
+    }
+
+    let currentPage = 1;
+
+    document.getElementById('prevPage').addEventListener('click', () => {
+      if (currentPage > 1) showPage(currentPage - 1);
+    });
+
+    document.getElementById('nextPage').addEventListener('click', () => {
+      if (currentPage < pagesData.length) showPage(currentPage + 1);
+    });
+
+    renderPages();
+  </script>
+</body>
+</html>
